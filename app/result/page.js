@@ -4,12 +4,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Home, RotateCcw } from "lucide-react";
 import Script from "next/script";
+import { Suspense } from "react";
 
 /**
- * 결과 페이지 컴포넌트
- * @returns {JSX.Element} 결과 페이지 UI
+ * 결과 페이지 컨텐츠 컴포넌트
  */
-function ResultPage() {
+function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const type = searchParams.get("type");
@@ -143,4 +143,13 @@ function ResultPage() {
   );
 }
 
-export default ResultPage; 
+/**
+ * 결과 페이지 컴포넌트
+ */
+export default function ResultPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResultContent />
+    </Suspense>
+  );
+} 

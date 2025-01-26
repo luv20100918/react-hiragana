@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ import {
  * 퀴즈 페이지 컴포넌트
  * @returns {JSX.Element} 퀴즈 페이지 UI
  */
-function QuizPage() {
+function QuizContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const type = searchParams.get("type");
@@ -176,4 +176,10 @@ function QuizPage() {
   );
 }
 
-export default QuizPage; 
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <QuizContent />
+    </Suspense>
+  );
+} 
