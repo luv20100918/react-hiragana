@@ -6,7 +6,18 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import QuizResult from "@/components/quiz-result";
 import { getRandomCharacter } from "@/lib/quiz-utils";
-import { Settings } from "lucide-react";
+import { Settings, XCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 /**
  * 퀴즈 페이지 컴포넌트
@@ -21,7 +32,7 @@ function QuizPage() {
   const [answer, setAnswer] = useState("");
   const [results, setResults] = useState([]);
   const [isCorrect, setIsCorrect] = useState(null);
-  const [score, setScore] = useState(100);
+  const [score, setScore] = useState(0); // 0점으로 시작
   
   useEffect(() => {
     if (!type) {
@@ -38,15 +49,15 @@ function QuizPage() {
     const correct = answer.toLowerCase() === currentQuestion.romanization.toLowerCase();
     setIsCorrect(correct);
     
-    if (!correct) {
-      setScore(prev => Math.max(0, prev - 1)); // 점수 차감 (최소 0점)
+    if (correct) {
+      setScore(prev => Math.min(100, prev + 4)); // 4점씩 증가 (최대 100점)
     }
     
     const newResult = {
       character: currentQuestion.character,
       answer,
       correct,
-      correctAnswer: currentQuestion.romanization // 틀린 문제를 위해 정답도 저장
+      correctAnswer: currentQuestion.romanization
     };
     
     setResults(prev => [...prev, newResult]);
@@ -55,7 +66,6 @@ function QuizPage() {
     const nextQuestion = getRandomCharacter(type, [...results, { character: currentQuestion.character, correct }]);
     
     if (!nextQuestion) {
-      // 모든 문제를 맞췄거나 더 이상 풀 문제가 없는 경우
       const wrongAnswers = [...results, newResult].filter(r => !r.correct);
       const encodedWrongAnswers = encodeURIComponent(JSON.stringify(wrongAnswers));
       router.push(`/result?type=${type}&score=${score}&wrong=${encodedWrongAnswers}`);
@@ -83,7 +93,37 @@ function QuizPage() {
 
   return (
     <div className="min-h-screen p-4">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-2">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-red-500 hover:text-red-700"
+            >
+              <XCircle size={24} />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>학습을 포기하시겠습니까?</AlertDialogTitle>
+              <AlertDialogDescription>
+                지금 포기하시면 현재까지의 진행상황이 저장되지 않습니다.
+                정말로 포기하시겠습니까?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>계속하기</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-500 hover:bg-red-700"
+                onClick={() => router.push("/")}
+              >
+                포기하기
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <Button
           variant="ghost"
           size="icon"
@@ -122,8 +162,13 @@ function QuizPage() {
 
         <div className="w-full">
           <h2 className="text-xl font-bold mb-4">진행 상황</h2>
-          <div className="text-lg">
-            맞은 문제: {results.filter(r => r.correct).length}개
+          <div className="flex gap-8">
+            <div className="text-lg text-green-600">
+              맞은 문제: {results.filter(r => r.correct).length}개
+            </div>
+            <div className="text-lg text-red-600">
+              틀린 문제: {results.filter(r => !r.correct).length}개
+            </div>
           </div>
         </div>
       </div>
