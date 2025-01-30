@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import QuizResult from "@/components/quiz-result";
-import { getRandomCharacter } from "@/lib/quiz-utils";
+import { getRandomCharacters } from "@/lib/quiz-utils";
 import { Settings, XCircle } from "lucide-react";
 import {
   AlertDialog,
@@ -28,30 +28,28 @@ function QuizContent() {
   const router = useRouter();
   const type = searchParams.get("type");
   
-  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [results, setResults] = useState([]);
   const [isCorrect, setIsCorrect] = useState(null);
-  const [score, setScore] = useState(0); // 0점으로 시작
+  const [score, setScore] = useState(0);
   
   useEffect(() => {
     if (!type) {
       router.push("/");
       return;
     }
-    setCurrentQuestion(getRandomCharacter(type));
+    setQuestions(getRandomCharacters(type));
   }, [type]);
 
   /**
    * 정답 체크 핸들러
    */
   function handleCheck() {
+    const currentQuestion = questions[currentQuestionIndex];
     const correct = answer.toLowerCase() === currentQuestion.romanization.toLowerCase();
     setIsCorrect(correct);
-    
-    if (correct) {
-      setScore(prev => Math.min(100, prev + 4)); // 4점씩 증가 (최대 100점)
-    }
     
     const newResult = {
       character: currentQuestion.character,
@@ -61,18 +59,23 @@ function QuizContent() {
     };
     
     setResults(prev => [...prev, newResult]);
-
     setAnswer("");
-    const nextQuestion = getRandomCharacter(type, [...results, { character: currentQuestion.character, correct }]);
     
-    if (!nextQuestion) {
-      const wrongAnswers = [...results, newResult].filter(r => !r.correct);
+    if (currentQuestionIndex === questions.length - 1) {
+      // 마지막 문제일 때 최종 점수 계산
+      const allResults = [...results, newResult];
+      const correctCount = allResults.filter(r => r.correct).length;
+      const finalScore = correctCount * 4; // 맞은 개수 × 4점
+      
+      const wrongAnswers = allResults.filter(r => !r.correct);
       const encodedWrongAnswers = encodeURIComponent(JSON.stringify(wrongAnswers));
-      router.push(`/result?type=${type}&score=${score}&wrong=${encodedWrongAnswers}`);
-      return;
+      router.push(`/result?type=${type}&score=${finalScore}&wrong=${encodedWrongAnswers}`);
+    } else {
+      setCurrentQuestionIndex(prev => prev + 1);
+      if (correct) {
+        setScore(prev => prev + 4);
+      }
     }
-    
-    setCurrentQuestion(nextQuestion);
   }
 
   /**
@@ -89,7 +92,8 @@ function QuizContent() {
     setAnswer(e.target.value.toLowerCase());
   }
 
-  if (!currentQuestion) return null;
+  if (!questions.length) return null;
+  const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <div className="min-h-screen p-4">
@@ -168,6 +172,9 @@ function QuizContent() {
             </div>
             <div className="text-lg text-red-600">
               틀린 문제: {results.filter(r => !r.correct).length}개
+            </div>
+            <div className="text-lg">
+              남은 문제: {questions.length - currentQuestionIndex - 1}개
             </div>
           </div>
         </div>
