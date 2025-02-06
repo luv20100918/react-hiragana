@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Home, RotateCcw } from "lucide-react";
 import Script from "next/script";
 import Advertisement from "@/components/advertisement";
+import { Suspense } from "react";
 
 /**
  * 결과 페이지 컴포넌트
@@ -115,6 +116,21 @@ function ResultContent() {
   );
 }
 
+/**
+ * 결과 페이지 로딩 컴포넌트
+ */
+function ResultLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-2xl font-bold">결과를 불러오는 중...</div>
+    </div>
+  );
+}
+
 export default function ResultPage() {
-  return <ResultContent />;
+  return (
+    <Suspense fallback={<ResultLoading />}>
+      <ResultContent />
+    </Suspense>
+  );
 } 
