@@ -5,16 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Home, RotateCcw } from "lucide-react";
 import Script from "next/script";
 import Advertisement from "@/components/advertisement";
-import { Metadata } from "next";
-
-export const metadata = {
-  title: "학습 결과",
-  description: "일본어 글자와 영어 단어 학습 결과를 확인하세요. 틀린 문제를 복습하고 더 나은 점수를 노려보세요!",
-  openGraph: {
-    title: "학습 결과",
-    description: "일본어 글자와 영어 단어 학습 결과를 확인하세요. 틀린 문제를 복습하고 더 나은 점수를 노려보세요!"
-  }
-};
 
 /**
  * 결과 페이지 컴포넌트

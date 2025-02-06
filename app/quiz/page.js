@@ -8,7 +8,6 @@ import QuizResult from "@/components/quiz-result";
 import { getRandomCharacters, getRandomEnglishWords } from "@/lib/quiz-utils";
 import { Settings, XCircle } from "lucide-react";
 import Advertisement from "@/components/advertisement";
-import { Metadata } from "next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,19 +20,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const metadata = {
-  title: "학습 진행 중",
-  description: "히라가나, 가타카나, 영어 단어를 학습하고 있습니다. 지금 바로 시작해보세요!",
-  openGraph: {
-    title: "학습 진행 중",
-    description: "히라가나, 가타카나, 영어 단어를 학습하고 있습니다. 지금 바로 시작해보세요!"
-  }
-};
-
-/**
- * 퀴즈 페이지 컴포넌트
- * @returns {JSX.Element} 퀴즈 페이지 UI
- */
 function QuizContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -63,9 +49,6 @@ function QuizContent() {
     }
   }, [type, mode]);
 
-  /**
-   * 정답 체크 핸들러
-   */
   function handleCheck() {
     const currentQuestion = questions[currentQuestionIndex];
     let isAnswerCorrect;
@@ -92,10 +75,9 @@ function QuizContent() {
     setAnswer("");
     
     if (currentQuestionIndex === questions.length - 1) {
-      // 마지막 문제일 때 최종 점수 계산
       const allResults = [...results, newResult];
       const correctCount = allResults.filter(r => r.correct).length;
-      const finalScore = Math.round((correctCount / questions.length) * 100); // 100점 만점으로 계산
+      const finalScore = Math.round((correctCount / questions.length) * 100);
       
       const wrongAnswers = allResults.filter(r => !r.correct);
       const encodedWrongAnswers = encodeURIComponent(JSON.stringify(wrongAnswers));
@@ -115,10 +97,6 @@ function QuizContent() {
     }
   }
 
-  /**
-   * 입력 핸들러
-   * @param {Event} e - 입력 이벤트
-   */
   function handleInput(e) {
     setAnswer(e.target.value);
   }

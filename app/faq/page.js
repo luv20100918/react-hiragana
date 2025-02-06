@@ -4,11 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export const metadata = {
-  title: "자주 묻는 질문",
-  description: "일본어 글자와 영어 단어 학습에 대한 자주 묻는 질문들을 모아놓았습니다.",
-};
-
 const faqs = [
   {
     question: "이 서비스는 무료인가요?",

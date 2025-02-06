@@ -65,6 +65,12 @@ export const metadata = {
   },
   verification: {
     google: "google-site-verification=YOUR_VERIFICATION_CODE",
+  },
+  other: {
+    "404": {
+      title: "페이지를 찾을 수 없습니다",
+      description: "요청하신 페이지를 찾을 수 없습니다. 홈으로 돌아가 다시 시도해주세요."
+    }
   }
 };
 
