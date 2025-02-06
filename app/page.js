@@ -12,13 +12,19 @@ import { Settings } from "lucide-react";
 function MainPage() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState("");
+  const [selectedMode, setSelectedMode] = useState("");
 
   /**
    * 학습 시작 핸들러
    */
   function handleStart() {
-    if (!selectedType) return;
-    router.push(`/quiz?type=${selectedType}`);
+    if (!selectedType || (selectedType === "english" && !selectedMode)) return;
+    const queryParams = new URLSearchParams();
+    queryParams.append("type", selectedType);
+    if (selectedType === "english") {
+      queryParams.append("mode", selectedMode);
+    }
+    router.push(`/quiz?${queryParams.toString()}`);
   }
 
   return (
@@ -33,27 +39,58 @@ function MainPage() {
         </Button>
       </div>
 
-      <h1 className="text-3xl font-bold">일본어 글자 학습</h1>
+      <h1 className="text-3xl font-bold">언어 학습</h1>
       
-      <div className="flex gap-4">
-        <Button 
-          variant={selectedType === "hiragana" ? "default" : "outline"}
-          onClick={() => setSelectedType("hiragana")}
-        >
-          히라가나
-        </Button>
-        <Button
-          variant={selectedType === "katakana" ? "default" : "outline"}
-          onClick={() => setSelectedType("katakana")}
-        >
-          가타카나
-        </Button>
+      <div className="flex flex-col gap-4 items-center">
+        <div className="flex gap-4">
+          <Button 
+            variant={selectedType === "hiragana" ? "default" : "outline"}
+            onClick={() => {
+              setSelectedType("hiragana");
+              setSelectedMode("");
+            }}
+          >
+            히라가나
+          </Button>
+          <Button
+            variant={selectedType === "katakana" ? "default" : "outline"}
+            onClick={() => {
+              setSelectedType("katakana");
+              setSelectedMode("");
+            }}
+          >
+            가타카나
+          </Button>
+          <Button
+            variant={selectedType === "english" ? "default" : "outline"}
+            onClick={() => setSelectedType("english")}
+          >
+            영어 단어
+          </Button>
+        </div>
+
+        {selectedType === "english" && (
+          <div className="flex gap-4">
+            <Button
+              variant={selectedMode === "word_to_meaning" ? "default" : "outline"}
+              onClick={() => setSelectedMode("word_to_meaning")}
+            >
+              영어 → 한글
+            </Button>
+            <Button
+              variant={selectedMode === "meaning_to_word" ? "default" : "outline"}
+              onClick={() => setSelectedMode("meaning_to_word")}
+            >
+              한글 → 영어
+            </Button>
+          </div>
+        )}
       </div>
 
       <Button 
         size="lg"
         onClick={handleStart}
-        disabled={!selectedType}
+        disabled={!selectedType || (selectedType === "english" && !selectedMode)}
       >
         학습 시작
       </Button>

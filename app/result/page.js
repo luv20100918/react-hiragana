@@ -4,33 +4,30 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Home, RotateCcw } from "lucide-react";
 import Script from "next/script";
-import { Suspense } from "react";
+import Advertisement from "@/components/advertisement";
 
 /**
- * 결과 페이지 컨텐츠 컴포넌트
+ * 결과 페이지 컴포넌트
+ * @returns {JSX.Element} 결과 페이지 UI
  */
 function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  
   const type = searchParams.get("type");
   const score = parseInt(searchParams.get("score") || "0");
-  const wrongAnswersParam = searchParams.get("wrong");
-  const wrongAnswers = wrongAnswersParam ? JSON.parse(decodeURIComponent(wrongAnswersParam)) : [];
+  const wrongAnswers = JSON.parse(decodeURIComponent(searchParams.get("wrong") || "[]"));
   
-  const typeText = type === "hiragana" ? "히라가나" : "가타카나";
+  const typeText = type === "hiragana" ? "히라가나" : 
+                  type === "katakana" ? "가타카나" : 
+                  type === "english" ? "영어 단어" : "";
 
-  /**
-   * 다시 시작 핸들러
-   */
-  function handleRetry() {
-    router.push(`/quiz?type=${type}`);
-  }
-
-  /**
-   * 홈으로 이동 핸들러
-   */
   function handleHome() {
     router.push("/");
+  }
+
+  function handleRetry() {
+    router.push(`/quiz?type=${type}`);
   }
 
   return (
@@ -47,13 +44,6 @@ function ResultContent() {
             gtag('config', 'G-WEP2FL9ZDS');
           `,
         }}
-      />
-
-      {/* Google AdSense */}
-      <Script 
-        async 
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5768884488453878"
-        crossOrigin="anonymous"
       />
 
       <div className="min-h-screen p-4">
@@ -76,25 +66,7 @@ function ResultContent() {
             </p>
           </div>
 
-          {/* AdSense 광고 */}
-          <div className="my-8">
-            <ins
-              className="adsbygoogle"
-              style={{ display: 'block' }}
-              data-ad-client="ca-pub-5768884488453878"
-              data-ad-slot="9551132248"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
-            <Script
-              id="adsbygoogle-init"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  (adsbygoogle = window.adsbygoogle || []).push({});
-                `,
-              }}
-            />
-          </div>
+          <Advertisement />
 
           {wrongAnswers.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -143,13 +115,6 @@ function ResultContent() {
   );
 }
 
-/**
- * 결과 페이지 컴포넌트
- */
 export default function ResultPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ResultContent />
-    </Suspense>
-  );
+  return <ResultContent />;
 } 

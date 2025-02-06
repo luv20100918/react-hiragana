@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import QuizResult from "@/components/quiz-result";
-import { getRandomCharacters } from "@/lib/quiz-utils";
+import { getRandomCharacters, getRandomEnglishWords } from "@/lib/quiz-utils";
 import { Settings, XCircle } from "lucide-react";
+import Advertisement from "@/components/advertisement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ function QuizContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const type = searchParams.get("type");
+  const mode = searchParams.get("mode");
   
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -40,22 +42,40 @@ function QuizContent() {
       router.push("/");
       return;
     }
-    setQuestions(getRandomCharacters(type));
-  }, [type]);
+    if (type === "english") {
+      if (!mode) {
+        router.push("/");
+        return;
+      }
+      setQuestions(getRandomEnglishWords(mode));
+    } else {
+      setQuestions(getRandomCharacters(type));
+    }
+  }, [type, mode]);
 
   /**
    * 정답 체크 핸들러
    */
   function handleCheck() {
     const currentQuestion = questions[currentQuestionIndex];
-    const correct = answer.toLowerCase() === currentQuestion.romanization.toLowerCase();
-    setIsCorrect(correct);
+    let isAnswerCorrect;
+    let correctAnswerValue;
+    
+    if (type === "english") {
+      isAnswerCorrect = answer.toLowerCase() === currentQuestion.answer.toLowerCase();
+      correctAnswerValue = currentQuestion.answer;
+    } else {
+      isAnswerCorrect = answer.toLowerCase() === currentQuestion.romanization.toLowerCase();
+      correctAnswerValue = currentQuestion.romanization;
+    }
+    
+    setIsCorrect(isAnswerCorrect);
     
     const newResult = {
-      character: currentQuestion.character,
+      character: type === "english" ? currentQuestion.question : currentQuestion.character,
       answer,
-      correct,
-      correctAnswer: currentQuestion.romanization
+      correct: isAnswerCorrect,
+      correctAnswer: correctAnswerValue
     };
     
     setResults(prev => [...prev, newResult]);
@@ -65,35 +85,37 @@ function QuizContent() {
       // 마지막 문제일 때 최종 점수 계산
       const allResults = [...results, newResult];
       const correctCount = allResults.filter(r => r.correct).length;
-      const finalScore = correctCount * 4; // 맞은 개수 × 4점
+      const finalScore = Math.round((correctCount / questions.length) * 100); // 100점 만점으로 계산
       
       const wrongAnswers = allResults.filter(r => !r.correct);
       const encodedWrongAnswers = encodeURIComponent(JSON.stringify(wrongAnswers));
-      router.push(`/result?type=${type}&score=${finalScore}&wrong=${encodedWrongAnswers}`);
+      const queryParams = new URLSearchParams();
+      queryParams.append("type", type);
+      if (type === "english") {
+        queryParams.append("mode", mode);
+      }
+      queryParams.append("score", finalScore);
+      queryParams.append("wrong", encodedWrongAnswers);
+      router.push(`/result?${queryParams.toString()}`);
     } else {
       setCurrentQuestionIndex(prev => prev + 1);
-      if (correct) {
-        setScore(prev => prev + 4);
+      if (isAnswerCorrect) {
+        setScore(prev => prev + Math.round(100 / questions.length));
       }
     }
   }
 
   /**
-   * 영어 입력만 허용하는 핸들러
+   * 입력 핸들러
    * @param {Event} e - 입력 이벤트
    */
   function handleInput(e) {
-    // 영어와 공백만 허용하는 정규식
-    const englishOnly = /^[a-zA-Z\s]*$/;
-    if (!englishOnly.test(e.target.value)) {
-      e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-      return;
-    }
-    setAnswer(e.target.value.toLowerCase());
+    setAnswer(e.target.value);
   }
 
   if (!questions.length) return null;
   const currentQuestion = questions[currentQuestionIndex];
+  const questionText = type === "english" ? currentQuestion.question : currentQuestion.character;
 
   return (
     <div className="min-h-screen p-4">
@@ -141,16 +163,18 @@ function QuizContent() {
         <div className="text-2xl font-bold">현재 점수: {score}점</div>
         
         <div className="text-9xl font-bold">
-          {currentQuestion.character}
+          {questionText}
         </div>
         
         <div className="flex gap-4 w-full max-w-md">
           <Input
             value={answer}
             onChange={handleInput}
-            placeholder="발음을 입력하세요 (영어만 가능)"
+            placeholder={type === "english" ? 
+              mode === "word_to_meaning" ? "한글 뜻을 입력하세요" : "영어 단어를 입력하세요" :
+              "발음을 입력하세요 (영어만 가능)"
+            }
             onKeyDown={(e) => e.key === "Enter" && handleCheck()}
-            pattern="[A-Za-z\s]+"
             className="font-mono"
           />
           <Button 
@@ -163,6 +187,8 @@ function QuizContent() {
             확인
           </Button>
         </div>
+
+        <Advertisement />
 
         <div className="w-full">
           <h2 className="text-xl font-bold mb-4">진행 상황</h2>
