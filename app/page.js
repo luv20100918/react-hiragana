@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, HelpCircle } from "lucide-react";
 
 /**
  * 메인 페이지 컴포넌트
@@ -29,7 +29,15 @@ function MainPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-8 p-4">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push("/faq")}
+          className="text-gray-600"
+        >
+          <HelpCircle size={24} />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -94,6 +102,10 @@ function MainPage() {
       >
         학습 시작
       </Button>
+
+      <footer className="absolute bottom-4 text-center text-sm text-gray-500">
+        <p>문의사항이 있으신가요? <button onClick={() => router.push("/faq")} className="text-primary hover:underline">자주 묻는 질문</button>을 확인해보세요.</p>
+      </footer>
     </div>
   );
 }

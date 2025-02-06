@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://react-hiragana.vercel.app/sitemap.xml 
